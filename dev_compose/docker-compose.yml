@@ -10,17 +10,18 @@ services:
       - POSTGRES_PASSWORD=tsunami
     volumes:
       - timescaledb:/var/lib/postgresql/data
+      - /Users/galois/docker/dev/dev_sql:/home/dev_sql
     networks:
       - timescaledb
 
   timescaledbsetup:
-    container_name: dbsetup
+    container_name: tsdbsetup
     image: timescale/timescaledb:latest-pg12
     depends_on:
       - timescaledb
     networks:
       - timescaledb
-    entrypoint: ["psql -U postgres && "]
+    entrypoint: ["psql -U postgres -h 127.0.0.1 -p 5432 -f /home/dev_sql/tsdbinit.sql"]
 
 volumes:
   timescaledb:
@@ -28,9 +29,3 @@ volumes:
 networks:
   timescaledb:
     external: true
-#  mongosetup:
-#     image: mongo:4.2.8
-#     depends_on:
-#       - mongo
-#     restart: "no"
-#     entrypoint: [ "bash", "-c", "sleep 10 && mongo --host mongo:27017 --eval 'rs.initiate()'"]
