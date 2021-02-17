@@ -8,21 +8,39 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=tsunami
+      - DB_HOST_NAME=timescaledb
     volumes:
       - timescaledb:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql #create tables and 'financial' database
     networks:
       - timescaledb
 
-  timescaledbsetup:
-    container_name: tsdbsetup
-    image: timescale/timescaledb:latest-pg12
+  snapshot:
+    container_name: snapshot
+    image: polysnap-node:testing
     depends_on:
       - timescaledb
-    volumes:
-      - /Users/galois/docker/dev/dev_sql:/usr/src/app
+    ports:
+      - 4005:4005
     networks:
       - timescaledb
-    entrypoint: ["sh", "/usr/src/app/init.sh"]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - timescaledb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin_user
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=timescaledb:5432
+      - GF_DATABASE_NAME=financial
+      - GF_DATABASE_USER=postgres
+      - GF_DATABASE_PASSWORD=tsunami
+    networks:
+      timescaledb:
 
 volumes:
   timescaledb:
