@@ -42,14 +42,15 @@ services:
       - GF_DATABASE_USER=postgres
       - GF_DATABASE_PASSWORD=tsunami
     networks:
-      timescaledb:
-    # volumes:
-    #   - ./wait-for-postgres.sh:/app/init/wait-for-postgres.sh
+      - timescaledb
+    volumes:
+      - grafana-storage:/var/lib/grafana
     command: bash -c 'while !</dev/tcp/db/5432; do echo 'PG is NA' sleep 1; done; sh /run.sh'
-    # entrypoint: ["sh", "/app/init/wait-for-postgres.sh", "sh", "/run.sh"]
 
 volumes:
   timescaledb:
+    external: true
+  grafana-storage:
     external: true
 networks:
   timescaledb:
